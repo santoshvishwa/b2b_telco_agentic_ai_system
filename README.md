@@ -69,8 +69,26 @@ I could not run Ollama or Anthropic calls from where I wrote this, and PyPI was 
    slow and very long), run `pip install -U langchain-ollama`.
 4. The default API model `claude-haiku-5-5` should be confirmed against what your key can access.
 
-## Next: Phase 1 (synthetic data)
+## Phase 1: synthetic data (done)
 
-Customer_360, SR_Complaint, Addons, bills, Call_Intent_Signals, External_Enrichment, with hidden churn and
-acquisition drivers and deliberately planted paradox cases, plus the policy documents, offer catalog and
-Customer Outcomes knowledge base.
+```powershell
+uv sync --extra dev                      # or: pip install -e ".[dev]"
+uv run python -m fiberpulse.synth.build --n-accounts 20000 --seed 42 --out data/synthetic
+uv run python -m fiberpulse.synth.validate --out data/synthetic
+uv run pytest
+```
+
+Expect about 20-40 s for the build, then a table of row counts (customer_360 20,000; model_scores 40,000;
+1,250 flagged per signal; 360 KB cases) and "all checks passed". Output goes to `data/synthetic/`:
+`lakehouse.db`, `raw/*.csv`, `knowledge/` (policy handbook, outcomes KB), `eval/` (hidden truth), `manifest.json`.
+
+Read `docs/DATA_DICTIONARY.md` first, then open `notebooks/day2_explore_data.ipynb`.
+On Windows, close any program holding `lakehouse.db` open (DB browser, notebook) before rebuilding.
+
+Not verified on my side: pandas 2.x specifically (the sandbox had pandas 3.0), real `pytest` (I used a
+stand-in runner, 35 tests), and identical bytes for the same seed across library versions (see ADR-014).
+
+## Next: Phase 2 (models)
+
+XGBoost churn and acquisition models tracked in MLflow, replacing the simulated scores. Features must stop at
+2026-08-31 (ADR-010).

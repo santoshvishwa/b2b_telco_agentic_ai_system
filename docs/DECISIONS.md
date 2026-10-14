@@ -52,6 +52,39 @@ first so Ollama can reuse the cached prefix, and account context is passed as co
 ranking-relevant facts. Agent evals are deterministic code against that truth.
 **Why:** zero tokens, exact, repeatable. An LLM judge is used only for explanation quality on about 10 cases, locally.
 
+## ADR-009: SQLite as the lakehouse stand-in
+**Decision:** all tables live in one `lakehouse.db` (SQLite) plus CSV copies in `raw/`. Agents query it with SQL.
+**Why:** zero setup, one file, same SQL habits as Databricks. Porting later means swapping the connection only.
+
+## ADR-010: Model view vs fresh events (how stale-score paradoxes arise)
+**Decision:** the stand-in model ("simulated-v0") sees only features dated up to 2026-08-31. Events from 2026-09-01
+to the scoring date (2026-10-01) shift the TRUE propensity but not the score. A flagged account whose fresh events
+lower the true risk is a paradox; one whose events agree with the score is confirmed.
+**Why:** this is how real paradoxes happen (the score is a month old). It gives Agent 4 a checkable reason to disagree.
+**Phase 2 rule:** the real XGBoost model must be trained on features at or before 2026-08-31, scored out-of-fold,
+or the paradox mechanism disappears.
+
+## ADR-011: eval/ is hidden from agents; context truth is computed two ways
+**Decision:** ground truth, the eval set, compliance cases and expected context live only under `eval/`. Agent code
+never reads that folder. Expected context is produced by pandas (`truth.py`) and independently by SQL
+(`validate.sql_context`); the build fails if they differ.
+**Why:** a grader that shares code with the thing it grades hides bugs in both.
+
+## ADR-012: Margin floor is inclusive (gross margin >= 60%)
+**Decision:** `meets_margin_floor` passes at exactly 60%. Offer UP-10 sits exactly on the floor as a boundary test.
+**Open:** your diagram says "above 60%". If you mean strictly above, change one line in `config.py`, flip UP-10's
+expected result, and the tests will show what moves.
+
+## ADR-013: Scaled counts, transcripts deferred
+**Decision:** 20,000 accounts, 1,250 flagged per signal (6.25%), 360 KB cases, 42 compliance cases. Call
+transcripts are not generated now (only call summaries); transcripts arrive with the Phase 7 extension.
+**Why:** enough for statistics and fast builds (about 23 s) without the weight of free-text generation.
+
+## ADR-014: Reproducibility is per library version
+**Decision:** same seed gives identical files on the same numpy/pandas versions; `manifest.json` stores SHA-256
+hashes to check this. Different library versions may give different bytes, though the same structure and checks.
+**Why:** numpy does not promise bit-identical random streams across versions.
+
 ## Open decisions
 - Final project name (Project Axon / Maestro / FiberMesh AI / Sentinel; none chosen).
 - Whether to port Phases 5+ to Databricks Free Edition.

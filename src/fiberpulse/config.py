@@ -31,6 +31,15 @@ PROVIDERS = ("ollama", "anthropic")
 MARGIN_FLOOR = 0.60
 
 
+def meets_margin_floor(gross_margin: float) -> bool:
+    """True when an offer's gross margin satisfies the floor.
+
+    Decision: a margin of exactly 60.0% PASSES (floor is inclusive). The tolerance keeps
+    float noise from flipping the boundary case. Revisit in docs/DECISIONS.md if policy changes.
+    """
+    return gross_margin >= MARGIN_FLOOR - 1e-9
+
+
 def _env_bool(name: str, default: bool) -> bool:
     raw = os.getenv(name)
     if raw is None or raw.strip() == "":

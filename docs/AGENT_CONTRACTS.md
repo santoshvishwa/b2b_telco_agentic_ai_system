@@ -141,12 +141,14 @@ scored account (churn or acquisition)
 - **Tests:** paradox path skips 5-7; a forced failure in Agent 5 leaves other accounts unaffected; a re-run
   produces identical output (cached) and no duplicate rows.
 
-## Evaluation data the Phase 1 generator must plant
+## Evaluation data (planted by the Phase 1 generator)
 
-| Planted truth | Used to test |
-|---|---|
-| Per-account ground-truth context values | Agent 3 accuracy |
-| About 25 paradox and about 25 confirmed accounts, with known labels | Agent 4 recall/precision, sycophancy |
-| Offer catalog with price and cost, some offers below the margin floor | Agents 5, 6 |
-| Policy documents with segment and term rules, and violating offers | Agent 6 |
-| Known propensity and revenue-lift relationships | Agent 7 |
+All files are under `data/synthetic/eval/`. Agents must never read this folder.
+
+| Planted truth | File | Used to test |
+|---|---|---|
+| Per-account expected context values (200 accounts) | `context_truth.json` | Agent 3 accuracy |
+| 25 paradox and 25 confirmed accounts, 11 archetypes, with labels | `eval_set.json` | Agent 4 recall/precision, sycophancy |
+| Offer catalog with price and cost, 3 offers below the margin floor, 1 on the boundary | `lakehouse.db` table `offer_catalog` | Agents 5, 6 |
+| 42 offer/account cases with expected rule violations | `compliance_cases.json` | Agent 6 |
+| Full hidden drivers and true probabilities | `ground_truth.csv` | Agent 7 and sanity checks |

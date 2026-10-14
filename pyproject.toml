@@ -9,12 +9,18 @@ description = "FiberPulse AI - multi-agent B2B fiber CVM orchestration (learning
 requires-python = ">=3.10"
 dependencies = [
     "pydantic>=2.6",
+    "numpy>=1.26",
+    "pandas>=2.1",
     "python-dotenv>=1.0",
     "langchain-core>=0.3",
     "langchain-ollama>=0.3",
     "langchain-anthropic>=0.3",
     "langgraph>=0.2",
 ]
+
+[project.scripts]
+fiberpulse-generate = "fiberpulse.synth.build:main"
+fiberpulse-validate = "fiberpulse.synth.validate:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]

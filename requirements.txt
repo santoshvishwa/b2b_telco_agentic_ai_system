@@ -1,4 +1,6 @@
 pydantic>=2.6
+numpy>=1.26
+pandas>=2.1
 python-dotenv>=1.0
 langchain-core>=0.3
 langchain-ollama>=0.3
