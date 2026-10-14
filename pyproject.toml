@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fiberpulse"
+version = "0.1.0"
+description = "FiberPulse AI - multi-agent B2B fiber CVM orchestration (learning build, synthetic data)"
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.6",
+    "python-dotenv>=1.0",
+    "langchain-core>=0.3",
+    "langchain-ollama>=0.3",
+    "langchain-anthropic>=0.3",
+    "langgraph>=0.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
