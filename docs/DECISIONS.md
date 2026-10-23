@@ -85,6 +85,36 @@ transcripts are not generated now (only call summaries); transcripts arrive with
 hashes to check this. Different library versions may give different bytes, though the same structure and checks.
 **Why:** numpy does not promise bit-identical random streams across versions.
 
+## ADR-015: Two score tables; agent evals stay on the stand-in scores
+**Decision:** Phase 2 writes the real model's scores to a new table `model_scores_v1`. The original `model_scores`
+("simulated-v0") is not touched, and Agents 3-7 are graded against it.
+**Why:** the 50 planted eval accounts were chosen from v0's flagged slice, so the grading set only makes sense on
+v0. v1 is the realistic model; Phase 3 adds a setting to pick the table.
+**Finding:** the real model recovers v0's skill (AUC 0.69 and 0.70-0.71 against v0's 0.69 and 0.71), but only about 52-54% of
+its flagged accounts match v0's, and 32 of the 50 planted accounts are still flagged (21 of 25 confirmed, 11 of 25
+paradox). The model cannot see the hidden drivers and September events, as in real life.
+
+## ADR-016: Labels, validation and what we cannot do
+**Decision:** labels are the 3-month outcomes the generator drew for each account (`models/labels_3m.csv`, extracted
+once from eval/ by `labels.py`). Scores are 5-fold out-of-fold, so no account is scored by a model that saw its label.
+**Limit:** there is one snapshot, so an out-of-time split (train on one period, test on a later one) is not possible
+here. Your real churn work uses out-of-time validation; this build uses cross-validation and says so.
+
+## ADR-017: Point-in-time features
+**Decision:** every feature uses information dated on or before 2026-08-31. Ticket status is read as of the snapshot
+(a ticket closed in September counts as open); a plan change after the snapshot is rewound; accounts that renewed
+after it get contract values sampled from non-renewing accounts (the old contract is unknowable and any rule built
+from the renewal date would leak). September bills are excluded.
+**Proof:** `tests/test_models.py` deletes or hides all later data and requires identical features, plus a control
+that fails if the check is vacuous. I also injected a deliberate leak (September bills) and confirmed the test fails.
+
+## ADR-018: XGBoost default, scikit-learn fallback, MLflow optional
+**Decision:** `--backend` picks `xgboost` when installed, else scikit-learn's `HistGradientBoostingClassifier`.
+Scores in `model_scores_v1` are probabilities (flagged accounts sit between about 0.10 and 0.60), not the rank-calibrated 0.70-0.99
+values of v0. MLflow is optional (`uv sync --extra mlops`, `--mlflow`), stores to `data/mlflow.db`, and a failure there
+never stops training.
+**Unverified on my side:** the XGBoost path and the MLflow logging could not be run in my sandbox.
+
 ## Open decisions
 - Final project name (Project Axon / Maestro / FiberMesh AI / Sentinel; none chosen).
 - Whether to port Phases 5+ to Databricks Free Edition.

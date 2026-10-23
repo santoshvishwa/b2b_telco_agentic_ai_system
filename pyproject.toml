@@ -11,6 +11,9 @@ dependencies = [
     "pydantic>=2.6",
     "numpy>=1.26",
     "pandas>=2.1",
+    "scikit-learn>=1.4",
+    "xgboost>=2.0",
+    "joblib>=1.3",
     "python-dotenv>=1.0",
     "langchain-core>=0.3",
     "langchain-ollama>=0.3",
@@ -21,9 +24,12 @@ dependencies = [
 [project.scripts]
 fiberpulse-generate = "fiberpulse.synth.build:main"
 fiberpulse-validate = "fiberpulse.synth.validate:main"
+fiberpulse-train = "fiberpulse.models.train:main"
+fiberpulse-model-report = "fiberpulse.models.report:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+mlops = ["mlflow>=2.14"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

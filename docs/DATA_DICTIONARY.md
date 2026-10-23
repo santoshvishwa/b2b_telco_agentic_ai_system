@@ -269,3 +269,14 @@ About 10% of paradox-pattern cases have a contrary outcome on purpose, so the KB
   across machines. The planted counts and all checks hold either way.
 - Close any notebook or tool that has `lakehouse.db` open before rebuilding, or Windows will refuse to replace it.
 - Call transcripts and PII masking are deferred to Phase 7 (Agent 2); `call_intent_signals.summary` is already clean text.
+
+## 10. Phase 2 outputs (`models/`, not in the Phase 1 schema)
+
+| Item | Where | Meaning |
+|---|---|---|
+| `model_scores_v1` | lakehouse table | Same columns as `model_scores`. `score` is an out-of-fold probability; `flagged` = top 6.25% per signal; `model_version` is `xgb-v1` or `hgb-v1`. |
+| `labels_3m.csv` | `data/synthetic/models/` | `churned_3m`, `acquired_3m` per account (training labels, copied from the generator's outcomes). Agents must not read it. |
+| `metrics.json` | same | AUC, PR-AUC, Brier, log-loss, lift at the top slice, plus the AUC of v0 and of the true probability for reference. |
+| `importance_churn.csv`, `importance_acquisition.csv` | same | Top 25 features. |
+| `churn_<version>.*`, `acquisition_<version>.*` | same | Saved final models (`.json` for XGBoost, `.joblib` for scikit-learn). |
+

@@ -88,7 +88,28 @@ On Windows, close any program holding `lakehouse.db` open (DB browser, notebook)
 Not verified on my side: pandas 2.x specifically (the sandbox had pandas 3.0), real `pytest` (I used a
 stand-in runner, 35 tests), and identical bytes for the same seed across library versions (see ADR-014).
 
-## Next: Phase 2 (models)
+## Phase 2: real models (done on branch `phase-2`)
 
-XGBoost churn and acquisition models tracked in MLflow, replacing the simulated scores. Features must stop at
-2026-08-31 (ADR-010).
+```powershell
+uv sync --extra dev                      # add --extra mlops if you want MLflow
+uv run python -m fiberpulse.models.train --data data/synthetic          # XGBoost; ~1-2 min
+uv run python -m fiberpulse.models.report --data data/synthetic
+uv run pytest
+```
+
+What it does: builds 72 point-in-time features (data up to 2026-08-31 only), trains churn and acquisition models with
+5-fold out-of-fold scoring, and writes `model_scores_v1` to the lakehouse plus `data/synthetic/models/`
+(`metrics.json`, `importance_*.csv`, saved models, `labels_3m.csv`, `model_scores_v1.csv`). The report compares v1 with
+the stand-in v0 on the 50 planted accounts.
+
+Add `--mlflow` to log to a local store, then `uv run mlflow ui --backend-store-uri sqlite:///data/synthetic/mlflow.db`.
+
+Numbers from my run (scikit-learn backend, 20K accounts): AUC 0.69 churn / 0.70 acquisition, top-6.25% lift 3.4-3.8x,
+and 32 of 50 planted accounts still flagged. Yours may differ with XGBoost.
+
+Not verified on my side: the XGBoost path, MLflow logging, and a run on Windows.
+Read ADR-015 to ADR-018 in `docs/DECISIONS.md`.
+
+## Next: Phase 3 (Agent 3 Researcher + minimal LangGraph)
+
+Agent 3 builds each flagged account's context from the lakehouse; a two-node graph runs it end to end.
