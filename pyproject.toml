@@ -30,6 +30,7 @@ fiberpulse-model-report = "fiberpulse.models.report:main"
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 mlops = ["mlflow>=2.14"]
+notebook = ["ipykernel>=6.29"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

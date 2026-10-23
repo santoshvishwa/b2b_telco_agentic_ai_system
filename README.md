@@ -91,7 +91,7 @@ stand-in runner, 35 tests), and identical bytes for the same seed across library
 ## Phase 2: real models (done on branch `phase-2`)
 
 ```powershell
-uv sync --extra dev                      # add --extra mlops if you want MLflow
+uv sync --extra dev --extra notebook     # notebook = Jupyter kernel for VS Code; add --extra mlops for MLflow
 uv run python -m fiberpulse.models.train --data data/synthetic          # XGBoost; ~1-2 min
 uv run python -m fiberpulse.models.report --data data/synthetic
 uv run pytest
